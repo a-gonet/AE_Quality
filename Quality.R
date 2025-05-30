@@ -1,1 +1,1 @@
-data <- read.csv(adam.csv.)
+data <- read.csv(adam.csv)
