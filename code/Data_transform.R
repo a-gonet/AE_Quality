@@ -1,6 +1,6 @@
 library(dplyr)
 
-data <- read.csv("C:\\Users\\Adam\\Desktop\\STUDIA_2024L\\AE\\project\\Report_Quality_of_LIfe.csv")
+data <- read.csv("raw_data/Report_Quality_of_Life.csv")
 
 data_clean <- data %>%
   mutate(across(everything(), ~ {
@@ -435,3 +435,5 @@ if (length(cols_to_ordered) > 0) {
 }
 
 summary(data_transformed)
+
+save(data_transformed, file = "processed_data/data_transformed.RData")
