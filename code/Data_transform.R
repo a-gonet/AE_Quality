@@ -1,5 +1,6 @@
 library(dplyr)
 
+
 data <- read.csv("raw_data/Report_Quality_of_Life.csv")
 
 data_clean <- data %>%
@@ -361,13 +362,13 @@ data_transformed <- data_transformed %>%
 
 # 3. Usunięcie wybranych kolumn (tak jak w oryginalnym kodzie)
 if ("Other" %in% names(data_transformed)) {
-  data_transformed <- data_transformed %>% select(-Other)
+  data_transformed <- data_transformed %>% dplyr::select(-Other)
 }
 if ("Health.Info.Discription" %in% names(data_transformed)) {
-  data_transformed <- data_transformed %>% select(-Health.Info.Discription)
+  data_transformed <- data_transformed %>% dplyr::select(-Health.Info.Discription)
 }
 if ("na_per_row" %in% names(data_transformed)) {
-  data_transformed <- data_transformed %>% select(-na_per_row)
+  data_transformed <- data_transformed %>% dplyr::select(-na_per_row)
 }
 
 
@@ -433,6 +434,8 @@ if (length(cols_to_ordered) > 0) {
   data_transformed <- data_transformed %>%
     mutate(across(all_of(cols_to_ordered), ordered))
 }
+
+data_transformed$Quality.of.Life <- as.ordered(data_transformed$Quality.of.Life)
 
 summary(data_transformed)
 
