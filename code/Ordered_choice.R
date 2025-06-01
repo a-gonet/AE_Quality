@@ -6,6 +6,8 @@ library(mlogit)
 load("processed_data/df_for_modeling.RData")
 
 summary(df_for_modeling)
+dim(df_for_modeling)
+colnames(df_for_modeling)
 
 print((df_for_modeling$Quality.of.Life))
 

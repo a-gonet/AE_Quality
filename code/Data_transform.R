@@ -345,7 +345,55 @@ ggsave(filename = "plots/heatmaps/cramers_correlation_heatmap.png",
        width = 8, height = 6, dpi = 300)
 
 # Step 8. Removing correlated columns
-correlated_cols <- c("Helpful.Family", "Close.Family", "Helpful.Friends", "Close.Friends", "Community.Trust", "Get.Along", "Community.Shares.Values", "Close.knit.Community", "Helpful.Community", "Trust", "Loyalty", "Family.Pride", "Expression", "Spend.Time.Together", "Feel.Close", "Togetherness", "Family.Respect", "Similar.Values", "Successful.Family")
+correlated_cols <- c("Helpful.Family", "Close.Family", "Helpful.Friends", "Close.Friends", "Community.Trust", "Get.Along", 
+"Community.Shares.Values", "Close.knit.Community", "Helpful.Community", "Present.Health", "Present.Mental.Health", "Present.Oral.Health", 
+"Arts.and.Culture", "Safety", "Traffic", "Social.Services", "Parks.and.Recs", "Libraries", "Public.Safety", "Airport", "Austin.Energy", "Court", 
+"Healthy.Diet", "City.Benefits", "Quality.of.Service", "Place.to.Retire", "Place.to.Work", "Small.Businesses", "Place.to.Live", "Raising.Children", 
+"Language", "House_Ownership", "Housing", "Ethnicity", "Helpful.Community", "Close.knit.Community", "Community.Shares.Values", "Get.Along", 
+"Community.Trust", "Togetherness", "Spend.Time.Together", "Feel.Close", "Family.Pride", "Expression", "Trust", "Loyalty", "Family.Respect", 
+"Similar.Values", "Successful.Family", "Satisfied.With.Life", "Ideal.Life")
+health_combined <- c("Present.Health", "Present.Mental.Health", "Present.Oral.Health", "Healthy.Diet")
+city_combined <- c("Arts.and.Culture", "Safety", "Traffic", "Social.Services", "Parks.and.Recs", "Libraries", "Public.Safety", "Airport", "Austin.Energy", "Court")
+work_combined <- c("Place.to.Work", "Small.Businesses")
+place_to_live_combined <- c("Place.to.Live", "Raising.Children", "Place.to.Retire")
+housing_combined <- c("House_Ownership", "Housing")
+ethnicity_combined <- c("Ethnicity", "Language")
+community_combined <- c("Helpful.Community", "Close.knit.Community", "Community.Shares.Values", "Get.Along", "Community.Trust", "Togetherness", "Spend.Time.Together", "Feel.Close", "Family.Pride", "Expression", "Trust", "Loyalty", "Family.Respect", "Similar.Values", "Successful.Family")
+life_satisfaction_combined <- c("Satisfied.With.Life", "Ideal.Life")
+
+df_for_modeling$City.Benefits.Combined <- apply(df_for_modeling[ , city_combined], 1, function(row) {
+  paste(row, collapse = "_")
+})
+df_for_modeling$Health.Combined <- apply(df_for_modeling[ , health_combined], 1, function(row) {
+  paste(row, collapse = "_")
+})
+df_for_modeling$Place.to.Live.Combined <- apply(df_for_modeling[ , place_to_live_combined], 1, function(row) {
+  paste(row, collapse = "_")
+})
+df_for_modeling$Wrok.Combined <- apply(df_for_modeling[ , work_combined], 1, function(row) {
+  paste(row, collapse = "_")
+})
+df_for_modeling$Housing.Combined <- apply(df_for_modeling[ , housing_combined], 1, function(row) {
+  paste(row, collapse = "_")
+})
+df_for_modeling$Ethnicity.Combined <- apply(df_for_modeling[ , ethnicity_combined], 1, function(row) {
+  paste(row, collapse = "_")
+})
+df_for_modeling$Community.Combined <- apply(df_for_modeling[ , community_combined], 1, function(row) {
+  paste(row, collapse = "_")
+})
+df_for_modeling$Life.Satisfaction.Combined <- apply(df_for_modeling[ , life_satisfaction_combined], 1, function(row) {
+  paste(row, collapse = "_")
+})
+
+df_for_modeling$City.Benefits <- as.factor(df_for_modeling$City.Benefits)
+df_for_modeling$Health.Combined <- as.factor(df_for_modeling$Health)
+df_for_modeling$Place.to.Live.Combined <- as.factor(df_for_modeling$Place.to.Live)
+df_for_modeling$Wrok.Combined <- as.factor(df_for_modeling$Wrok)
+df_for_modeling$Housing.Combined <- as.factor(df_for_modeling$Housing)
+df_for_modeling$Ethnicity.Combined <- as.factor(df_for_modeling$Ethnicity)
+df_for_modeling$Community.Combined <- as.factor(df_for_modeling$Community)
+df_for_modeling$Life.Satisfaction.Combined <- as.factor(df_for_modeling$Life.Satisfaction)
 numeric_columns <- numeric_columns[, !(names(numeric_columns) %in% correlated_cols)]
 df_for_modeling <- df_for_modeling[, !(names(df_for_modeling) %in% correlated_cols)]
 
