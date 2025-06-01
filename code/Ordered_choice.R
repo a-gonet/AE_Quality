@@ -1,18 +1,14 @@
 library(dplyr)
 library(MASS)
 library(lmtest)
+library(mlogit)
 
-options(scipen = 20)
+load("processed_data/df_for_modeling.RData")
 
-load("processed_data/data_transformed.RData")
+summary(df_for_modeling)
 
-summary(data_transformed)
+print((df_for_modeling$Quality.of.Life))
 
-print(class(data_transformed$Quality.of.Life))
+model <- MASS::polr(Quality.of.Life ~ ., data = df_for_modeling, Hess = TRUE)
 
-ologit2 = polr(Quality.of.Life~Age+Gender+Ethnicity+Marital.Status+Education.Completed+Household.Size+Religion+Income+Achieving.Ends.Meet
-               +US_Born_Status+US.Residency+English.Speaking+Familiarity.with.America+Familiarity.with.Ethnic.Origin+Discrimination, 
-               data=data_transformed)
-
-summary(ologit2)
-coeftest(ologit2)
+summary(model)

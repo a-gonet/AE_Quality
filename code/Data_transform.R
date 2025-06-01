@@ -189,19 +189,49 @@ common_cols_list
 
 data_transformed["Quality.of.Life"]
 
+# Step 5.2 Handling NA
+for (col in names(data_transformed)) {
+  # Check if column is numeric
+  if (is.numeric(data_transformed[[col]])) {
+    # Replace NAs with median (ignoring NAs in median computation)
+    data_transformed[[col]][is.na(data_transformed[[col]])] <- median(data_transformed[[col]], na.rm = TRUE)
+  }
+}
+sapply(data_transformed[, sapply(data_transformed, is.numeric)], function(x) sum(is.na(x)))
+
+for (col in names(data_transformed)) {
+  if (is.factor(data_transformed[[col]])) {
+    # Remove NAs before finding mode
+    non_na_values <- data_transformed[[col]][!is.na(data_transformed[[col]])]
+
+    # Only proceed if non-NA values exist
+    if (length(non_na_values) > 0) {
+      most_common <- names(sort(table(non_na_values), decreasing = TRUE))[1]
+      data_transformed[[col]][is.na(data_transformed[[col]])] <- most_common
+    }
+  }
+}
+sapply(data_transformed[, sapply(data_transformed, is.factor)], function(x) sum(is.na(x)))
+
+# Step 5.3 Handling One Answer
+df_for_modeling <- data_transformed[, sapply(data_transformed, function(col) {
+  # Remove NA values
+  vals <- na.omit(col)
+  # Count unique values
+  length(unique(vals)) > 1
+})]
+
 # Step 6. Modifying Quality.of.Life to smaller order
-data_transformed <- data_transformed %>%
+df_for_modeling <- df_for_modeling %>%
   mutate(Quality.of.Life = factor(Quality.of.Life,
-                                 levels = as.character(1:10),
-                                 ordered = TRUE))
+                                  levels = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10"),
+                                  ordered = TRUE))
 
-numeric_columns <- select(data_transformed, where(is.numeric))
-factor_columns <- select(data_transformed, where(is.factor))
+numeric_columns <- select(df_for_modeling, where(is.numeric))
+factor_columns <- select(df_for_modeling, where(is.factor))
 
-# Step 7. Saving the transformed data
-summary(data_transformed)
 
-save(data_transformed, file = "processed_data/data_transformed.RData")
+# Step 7. Creating important plots
 
 library(ggplot2)
 
@@ -209,7 +239,7 @@ library(ggplot2)
 for (col_name in names(numeric_columns)) {
   
   # Histogram plot
-  hist_plot <- ggplot(data_transformed, aes_string(x = col_name)) +
+  hist_plot <- ggplot(df_for_modeling, aes_string(x = col_name)) +
     geom_histogram(bins = 30, fill = "skyblue", color = "black") +
     labs(title = paste("Histogram of", col_name), x = col_name, y = "Count") +
     theme_minimal() +
@@ -225,7 +255,7 @@ for (col_name in names(numeric_columns)) {
          plot = hist_plot, width = 6, height = 4, dpi = 300)
   
   # Boxplot
-  box_plot <- ggplot(data_transformed, aes_string(y = col_name)) +
+  box_plot <- ggplot(df_for_modeling, aes_string(y = col_name)) +
     geom_boxplot(fill = "lightgreen") +
     labs(title = paste("Boxplot of", col_name), y = col_name) +
     theme_minimal() +
@@ -245,7 +275,7 @@ library(reshape2)
 
 
 # Calculate correlation matrix
-corr_matrix <- cor(data_transformed[, names(numeric_columns)], use = "pairwise.complete.obs")
+corr_matrix <- cor(df_for_modeling[, names(numeric_columns)], use = "pairwise.complete.obs")
 
 # Melt correlation matrix to long format
 melted_corr <- melt(corr_matrix)
@@ -273,8 +303,8 @@ ggsave(filename = "plots/heatmaps/numeric_correlation_heatmap.png",
 
 library(lsr)
 
-factor_cols <- sapply(data_transformed, is.factor)
-factor_data <- data_transformed[, factor_cols]
+factor_cols <- sapply(df_for_modeling, is.factor)
+factor_data <- df_for_modeling[, factor_cols]
 
 sapply(factor_data, function(x) length(levels(x)))
 factor_data_filtered <- factor_data[, sapply(factor_data, function(x) length(levels(x)) > 1)]
@@ -313,3 +343,13 @@ cramers_heatmap <- ggplot(melted_cramers, aes(Var1, Var2, fill = value)) +
 ggsave(filename = "plots/heatmaps/cramers_correlation_heatmap.png",
        plot = cramers_heatmap,
        width = 8, height = 6, dpi = 300)
+
+# Step 8. Removing correlated columns
+correlated_cols <- c("Helpful.Family", "Close.Family", "Helpful.Friends", "Close.Friends", "Community.Trust", "Get.Along", "Community.Shares.Values", "Close.knit.Community", "Helpful.Community", "Trust", "Loyalty", "Family.Pride", "Expression", "Spend.Time.Together", "Feel.Close", "Togetherness", "Family.Respect", "Similar.Values", "Successful.Family")
+numeric_columns <- numeric_columns[, !(names(numeric_columns) %in% correlated_cols)]
+df_for_modeling <- df_for_modeling[, !(names(df_for_modeling) %in% correlated_cols)]
+
+# Step 9. Saving the final data
+summary(df_for_modeling)
+
+save(df_for_modeling, file = "processed_data/df_for_modeling.RData")
