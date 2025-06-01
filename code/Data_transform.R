@@ -195,9 +195,121 @@ data_transformed <- data_transformed %>%
                                  levels = as.character(1:10),
                                  ordered = TRUE))
 
+numeric_columns <- select(data_transformed, where(is.numeric))
+factor_columns <- select(data_transformed, where(is.factor))
+
 # Step 7. Saving the transformed data
 summary(data_transformed)
 
 save(data_transformed, file = "processed_data/data_transformed.RData")
 
+library(ggplot2)
 
+# Loop through each numeric column
+for (col_name in names(numeric_columns)) {
+  
+  # Histogram plot
+  hist_plot <- ggplot(data_transformed, aes_string(x = col_name)) +
+    geom_histogram(bins = 30, fill = "skyblue", color = "black") +
+    labs(title = paste("Histogram of", col_name), x = col_name, y = "Count") +
+    theme_minimal() +
+    theme(
+      panel.background = element_rect(fill = "white"),
+      plot.background = element_rect(fill = "white"),
+      panel.grid.major = element_line(color = "grey90"),
+      panel.grid.minor = element_line(color = "grey95")
+    )
+  
+  # Save histogram
+  ggsave(filename = paste0("plots/histograms/", col_name, "_histogram.png"),
+         plot = hist_plot, width = 6, height = 4, dpi = 300)
+  
+  # Boxplot
+  box_plot <- ggplot(data_transformed, aes_string(y = col_name)) +
+    geom_boxplot(fill = "lightgreen") +
+    labs(title = paste("Boxplot of", col_name), y = col_name) +
+    theme_minimal() +
+      theme(
+        panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(color = "grey90"),
+        panel.grid.minor = element_line(color = "grey95")
+      )
+    
+  # Save boxplot
+  ggsave(filename = paste0("plots/boxplots/", col_name, "_boxplot.png"),
+         plot = box_plot, width = 4, height = 6, dpi = 300)
+}
+
+library(reshape2)
+
+
+# Calculate correlation matrix
+corr_matrix <- cor(data_transformed[, names(numeric_columns)], use = "pairwise.complete.obs")
+
+# Melt correlation matrix to long format
+melted_corr <- melt(corr_matrix)
+
+# Plot heatmap with ggplot2
+correlation_heatmap <- ggplot(melted_corr, aes(Var1, Var2, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name = "Correlation") +
+  theme_minimal() +
+  theme(
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white"),
+    panel.grid.major = element_line(color = "grey90"),
+    panel.grid.minor = element_line(color = "grey95"),
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+  ) +
+  coord_fixed() +
+  labs(title = "Correlation Heatmap")
+
+ggsave(filename = "plots/heatmaps/numeric_correlation_heatmap.png",
+       plot = correlation_heatmap,
+       width = 8, height = 6, dpi = 300)
+
+library(lsr)
+
+factor_cols <- sapply(data_transformed, is.factor)
+factor_data <- data_transformed[, factor_cols]
+
+sapply(factor_data, function(x) length(levels(x)))
+factor_data_filtered <- factor_data[, sapply(factor_data, function(x) length(levels(x)) > 1)]
+
+n <- ncol(factor_data_filtered)
+cramers_v_matrix <- matrix(NA, n, n)
+colnames(cramers_v_matrix) <- rownames(cramers_v_matrix) <- colnames(factor_data_filtered)
+
+for(i in 1:n){
+  for(j in 1:n){
+    tbl <- table(factor_data_filtered[[i]], factor_data_filtered[[j]])
+    # Only calculate if table has more than one level in both dimensions
+    if (nrow(tbl) > 1 && ncol(tbl) > 1) {
+      cramers_v_matrix[i, j] <- cramersV(tbl)
+    } else {
+      cramers_v_matrix[i, j] <- NA
+    }
+  }
+}
+
+melted_cramers <- melt(cramers_v_matrix, na.rm = TRUE)
+
+cramers_heatmap <- ggplot(melted_cramers, aes(Var1, Var2, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "white", high = "darkred", name = "Cramér's V") +
+  theme_minimal() +
+  theme(
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white"),
+    panel.grid.major = element_line(color = "grey90"),
+    panel.grid.minor = element_line(color = "grey95"),
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  coord_fixed() +
+  labs(title = "Cramér's V Heatmap (Factor Variables)")
+
+ggsave(filename = "plots/heatmaps/cramers_correlation_heatmap.png",
+       plot = cramers_heatmap,
+       width = 8, height = 6, dpi = 300)
