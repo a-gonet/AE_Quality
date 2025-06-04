@@ -65,7 +65,7 @@ data_transformed <- data_filtered %>%
     House_Ownership = Status.of.Ownership,
     Sibling_LivingWith = Brother.Sister,
     US.Residency = Duration.of.Residency,
-    City.Residency = Residency
+    City.Residency = Residency,
   )
 
 numeric_columns <- select(data_transformed, where(is.numeric))
@@ -89,9 +89,10 @@ ordered_columns <- multifactor_columns %>%
 unique_values <- lapply(ordered_columns, unique)
 all_unique_values <- unique(unlist(unique_values))
 
+colnames(data_transformed)[colnames(data_transformed) == "Satisfaction.With.Housing."] <- "Satisfaction.With.Housing"
 ordered_levels <- list(
   Income = c("$0 - $9.999", "$10.000 - $19.999", "$20.000 - $29.999", "$30.000 - $39.999", "$40.000 - $49.999", "$50.000 - $59.999", "$60.000 - $69.999", "$70.000 and over"),
-  English.Speaking = c("Not at all", "Not well", "Well", "Very well", "NA"),
+  English.Speaking = c("Not at all", "Not well", "Well", "Very well"),
   English.Difficulties = c("Not at all", "Not much", "Much", "Very much"),
   Familiarity.with.America = c("Very low", "Low", "High", "Very high"), 
   Familiarity.with.Ethnic.Origin = c("Very low", "Low", "High", "Very high"),
@@ -145,8 +146,12 @@ ordered_levels <- list(
   City.Effort.Satisfaction = c("Very dissatisfied", "Somewhat dissatisfied", "Niether satisfied or dissatisfied", "Somewhat satisfied", "Very satisfied")
 )
 
-data_transformed <- data_transformed %>%
-  mutate(across(all_of(names(ordered_columns)), ~ factor(.x, levels = ordered_levels[[cur_column()]], ordered = TRUE)))
+for(colname in names(ordered_levels)) {
+  if (colname %in% names(data_transformed)) {
+    data_transformed[[colname]] <- factor(data_transformed[[colname]], levels = ordered_levels[[colname]], ordered = TRUE)
+    data_transformed[[colname]] <- as.numeric(data_transformed[[colname]])
+  }
+}
 
 binary_transform <- function(col) {
   vals <- unique(na.omit(col))
@@ -176,6 +181,13 @@ if ("na_per_row" %in% names(data_transformed)) {
 }
 
 # Step 5. Defining final columns and checking existance
+numeric_columns <- select(data_transformed, where(is.numeric))
+
+binary_factor_columns <- select(data_transformed, where(is.factor))
+
+multifactor_columns <- data_transformed %>%
+  select(setdiff(colnames(data_transformed), c(colnames(binary_factor_columns), colnames(numeric_columns))))
+
 column_groups <- list(
   numeric = names(numeric_columns),
   binary = names(binary_factor_columns),
@@ -227,14 +239,15 @@ df_for_modeling <- df_for_modeling %>%
                                   levels = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10"),
                                   ordered = TRUE))
 
-numeric_columns <- select(df_for_modeling, where(is.numeric))
-factor_columns <- select(df_for_modeling, where(is.factor))
+
 
 
 # Step 7. Creating important plots
 
 library(ggplot2)
 
+numeric_columns <- select(df_for_modeling, where(is.numeric))
+factor_columns <- select(df_for_modeling, where(is.factor))
 # Loop through each numeric column
 for (col_name in names(numeric_columns)) {
   
@@ -303,11 +316,9 @@ ggsave(filename = "plots/heatmaps/numeric_correlation_heatmap.png",
 
 library(lsr)
 
-factor_cols <- sapply(df_for_modeling, is.factor)
-factor_data <- df_for_modeling[, factor_cols]
 
-sapply(factor_data, function(x) length(levels(x)))
-factor_data_filtered <- factor_data[, sapply(factor_data, function(x) length(levels(x)) > 1)]
+sapply(factor_columns, function(x) length(levels(x)))
+factor_data_filtered <- factor_columns[, sapply(factor_columns, function(x) length(levels(x)) > 1)]
 
 n <- ncol(factor_data_filtered)
 cramers_v_matrix <- matrix(NA, n, n)
@@ -345,59 +356,85 @@ ggsave(filename = "plots/heatmaps/cramers_correlation_heatmap.png",
        width = 8, height = 6, dpi = 300)
 
 # Step 8. Removing correlated columns
-correlated_cols <- c("Helpful.Family", "Close.Family", "Helpful.Friends", "Close.Friends", "Community.Trust", "Get.Along", 
-"Community.Shares.Values", "Close.knit.Community", "Helpful.Community", "Present.Health", "Present.Mental.Health", "Present.Oral.Health", 
-"Arts.and.Culture", "Safety", "Traffic", "Social.Services", "Parks.and.Recs", "Libraries", "Public.Safety", "Airport", "Austin.Energy", "Court", 
-"Healthy.Diet", "City.Benefits", "Quality.of.Service", "Place.to.Retire", "Place.to.Work", "Small.Businesses", "Place.to.Live", "Raising.Children", 
-"Language", "House_Ownership", "Housing", "Ethnicity", "Helpful.Community", "Close.knit.Community", "Community.Shares.Values", "Get.Along", 
-"Community.Trust", "Togetherness", "Spend.Time.Together", "Feel.Close", "Family.Pride", "Expression", "Trust", "Loyalty", "Family.Respect", 
-"Similar.Values", "Successful.Family", "Satisfied.With.Life", "Ideal.Life")
-health_combined <- c("Present.Health", "Present.Mental.Health", "Present.Oral.Health", "Healthy.Diet")
-city_combined <- c("Arts.and.Culture", "Safety", "Traffic", "Social.Services", "Parks.and.Recs", "Libraries", "Public.Safety", "Airport", "Austin.Energy", "Court")
+correlated_cols <- c("Present.Health", "Present.Mental.Health", "Present.Oral.Health", "Arts.and.Culture", "Safety", 
+"Social.Services", "Parks.and.Recs", "Libraries", "Public.Safety", "Airport", "Austin.Energy", "Court", "Helpful.Community", 
+"Close.knit.Community", "Community.Shares.Values", "Get.Along", "Community.Trust", "Togetherness", "Spend.Time.Together", 
+"Feel.Close", "Family.Pride", "Expression", "Trust", "Loyalty", "Family.Respect", "Similar.Values", "Successful.Family", 
+"See.Family", "Helpful.Family", "Close.Family", "See.Friends", "Helpful.Friends", "Close.Friends", "Place.to.Live", 
+"Raising.Children", "Place.to.Retire", "House_Ownership", "Housing", "Visit.Frequency", "Quality.of.Service", 
+"Satisfied.With.Life", "Ideal.Life", "Ethnicity", "Language")
+health_combined <- c("Present.Health", "Present.Mental.Health", "Present.Oral.Health")
+city_combined <- c("Arts.and.Culture", "Safety", "Social.Services", "Parks.and.Recs", "Libraries", "Public.Safety", "Airport", "Austin.Energy", "Court")
 work_combined <- c("Place.to.Work", "Small.Businesses")
 place_to_live_combined <- c("Place.to.Live", "Raising.Children", "Place.to.Retire")
 housing_combined <- c("House_Ownership", "Housing")
 ethnicity_combined <- c("Ethnicity", "Language")
-community_combined <- c("Helpful.Community", "Close.knit.Community", "Community.Shares.Values", "Get.Along", "Community.Trust", "Togetherness", "Spend.Time.Together", "Feel.Close", "Family.Pride", "Expression", "Trust", "Loyalty", "Family.Respect", "Similar.Values", "Successful.Family")
+community_combined <- c("Helpful.Community", "Close.knit.Community", "Community.Shares.Values", "Get.Along", "Community.Trust", "Togetherness", "Spend.Time.Together", "Feel.Close", "Family.Pride", "Expression", "Trust", "Loyalty", "Family.Respect", "Similar.Values", "Successful.Family", "See.Family", "Helpful.Family", "Close.Family", "See.Friends", "Helpful.Friends", "Close.Friends")
 life_satisfaction_combined <- c("Satisfied.With.Life", "Ideal.Life")
 
-df_for_modeling$City.Benefits.Combined <- apply(df_for_modeling[ , city_combined], 1, function(row) {
-  paste(row, collapse = "_")
-})
-df_for_modeling$Health.Combined <- apply(df_for_modeling[ , health_combined], 1, function(row) {
-  paste(row, collapse = "_")
-})
-df_for_modeling$Place.to.Live.Combined <- apply(df_for_modeling[ , place_to_live_combined], 1, function(row) {
-  paste(row, collapse = "_")
-})
-df_for_modeling$Wrok.Combined <- apply(df_for_modeling[ , work_combined], 1, function(row) {
-  paste(row, collapse = "_")
-})
-df_for_modeling$Housing.Combined <- apply(df_for_modeling[ , housing_combined], 1, function(row) {
-  paste(row, collapse = "_")
-})
-df_for_modeling$Ethnicity.Combined <- apply(df_for_modeling[ , ethnicity_combined], 1, function(row) {
-  paste(row, collapse = "_")
-})
-df_for_modeling$Community.Combined <- apply(df_for_modeling[ , community_combined], 1, function(row) {
-  paste(row, collapse = "_")
-})
-df_for_modeling$Life.Satisfaction.Combined <- apply(df_for_modeling[ , life_satisfaction_combined], 1, function(row) {
-  paste(row, collapse = "_")
-})
+library(stats)
 
-df_for_modeling$City.Benefits <- as.factor(df_for_modeling$City.Benefits)
-df_for_modeling$Health.Combined <- as.factor(df_for_modeling$Health)
-df_for_modeling$Place.to.Live.Combined <- as.factor(df_for_modeling$Place.to.Live)
-df_for_modeling$Wrok.Combined <- as.factor(df_for_modeling$Wrok)
-df_for_modeling$Housing.Combined <- as.factor(df_for_modeling$Housing)
-df_for_modeling$Ethnicity.Combined <- as.factor(df_for_modeling$Ethnicity)
-df_for_modeling$Community.Combined <- as.factor(df_for_modeling$Community)
-df_for_modeling$Life.Satisfaction.Combined <- as.factor(df_for_modeling$Life.Satisfaction)
+for (colname in names(numeric_columns)) {
+  col <- df_for_modeling[[colname]]
+  
+  # Convert factor/character to ordered numeric
+  if (is.factor(col) || is.character(col)) {
+    col <- as.numeric(factor(col, ordered = TRUE))
+  }
+  
+  # Replace NAs with median
+  if (is.numeric(col)) {
+    median_val <- median(col, na.rm = TRUE)
+    col[is.na(col)] <- median_val
+  }
+  
+  df_for_modeling[[colname]] <- col
+}
+
+
+# PCA on city_combined columns (numeric)
+pca_community <- prcomp(df_for_modeling[ , community_combined], center = TRUE, scale. = TRUE)
+pca_health <- prcomp(df_for_modeling[, health_combined], center = TRUE, scale. = TRUE)
+pca_satisfaction <- prcomp(df_for_modeling[, life_satisfaction_combined], center = TRUE, scale. = TRUE)
+pca_place_to_live <- prcomp(df_for_modeling[, place_to_live_combined], center = TRUE, scale. = TRUE)
+
+# First PC scores as weighted composite
+df_for_modeling$Commuinity.Combined.Score <- pca_community$x[,1]
+df_for_modeling$Health.Combined.Score <- pca_health$x[,1]
+df_for_modeling$Life.Satisfaction.Combined.Score <- pca_satisfaction$x[,1]
+df_for_modeling$Place.to.Live.Combined.Score <- pca_place_to_live$x[,1]
+
+df_for_modeling$Housing.Combined <- apply(df_for_modeling[, housing_combined], 1, function(x) {paste(x, collapse = "_")})
+df_for_modeling$Housing.Combined <- as.factor(df_for_modeling$Housing.Combined)
+df_for_modeling$Ethnicity.Combined <- apply(df_for_modeling[, ethnicity_combined], 1, function(x) {paste(x, collapse = "_")})
+df_for_modeling$Ethnicity.Combined <- as.factor(df_for_modeling$Ethnicity.Combined)
+
 numeric_columns <- numeric_columns[, !(names(numeric_columns) %in% correlated_cols)]
+factor_columns <- factor_columns[, !(names(factor_columns) %in% correlated_cols)]
 df_for_modeling <- df_for_modeling[, !(names(df_for_modeling) %in% correlated_cols)]
 
-# Step 9. Saving the final data
+# Step 9. Removing variables with near 0 variance
+library(caret)
+nzv <- nearZeroVar(df_for_modeling, saveMetrics = TRUE)
+df_for_modeling <- df_for_modeling[, !nzv$nzv]
+
+
+# Step n. Saving the final data
 summary(df_for_modeling)
 
 save(df_for_modeling, file = "processed_data/df_for_modeling.RData")
+
+for(col in colnames(df_for_modeling)) {
+  # Skip target variable itself
+  if (col == "Quality.of.Life") next
+  
+  # Only factor or character columns (categorical)
+  if (is.factor(df_for_modeling[[col]]) || is.character(df_for_modeling[[col]])) {
+    cat("Checking column:", col, "\n")
+    print(table(df_for_modeling[[col]], df_for_modeling$Quality.of.Life))
+    cat("\n---------------------------------\n")
+  }
+}
+
+numeric_cols <- sapply(df_for_modeling, is.numeric)
+sum(numeric_cols)
