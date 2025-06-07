@@ -10,6 +10,14 @@ library(dplyr)
 data2 <- read.csv("AAQoL_original.csv")
 data3 <- rbind(c(1:nrow(data2)),data2)
 
+#przefiltrowane ręcznie kolumny z source
+
+goodCols <- c(2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 19, 21, 22, 25, 26, 27, 28, 29, 34, 35, 36, 37, 38, 39, 
+              41, 42, 45, 46, 47, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 66, 69, 77, 
+              91, 93, 126, 127, 128, 129, 130, 131, 142, 143, 182, 184, 186, 187, 188, 189, 190, 191, 192, 
+              193, 194, 195, 196, 199, 200, 201)
+
+
 dataRed <- data2[2:nrow(data2), goodCols]
 
 # Step 1: Cleaning the data
@@ -205,6 +213,12 @@ summary(data_transformed["Quality.of.Life"])
 
 
 # Step 5.2 Handling NA
+
+most_frequent <- function(x, na.rm = TRUE) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
 for (col in names(data_transformed)) {
   # Check if column is numeric
   if (is.numeric(data_transformed[[col]])) {
@@ -216,6 +230,7 @@ for (col in names(data_transformed)) {
     data_transformed[[col]][is.na(data_transformed[[col]])] <- most_frequent(data_transformed[[col]], na.rm = TRUE)
   }
 }
+
 sapply(data_transformed[, sapply(data_transformed, is.numeric)], function(x) sum(is.na(x)))
 sapply(data_transformed[, sapply(data_transformed, is.factor)], function(x) sum(is.na(x)))
 
@@ -376,9 +391,13 @@ df_onehot <- df_onehot %>%
 
 df_onehot$US_Live_percent <- df_onehot$US.Residency/df_onehot$Age
 
+save(df_onehot, file = "processed_data/df_onehot.RData")
+
 # badLogit1 <- glm(badQuality~., data=df_onehot, family=binomial(link="logit"))
 # excellentLogit1 <- glm(excellentQuality~., data=df_onehot, family=binomial(link="logit"))
-# 
+
+
+
 
 #####################
 #####################
