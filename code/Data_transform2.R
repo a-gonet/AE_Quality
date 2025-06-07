@@ -472,6 +472,8 @@ df_for_modeling$Place.to.Live.Combined.Score <- pca_place_to_live$x[,1]
 # df_for_modeling$Ethnicity.Combined <- apply(df_for_modeling[, ethnicity_combined], 1, function(x) {paste(x, collapse = "_")})
 # df_for_modeling$Ethnicity.Combined <- as.factor(df_for_modeling$Ethnicity.Combined)
 
+factor_columns <- select(df_for_modeling, where(is.factor))
+
 numeric_columns <- numeric_columns[, !(names(numeric_columns) %in% correlated_cols)]
 factor_columns <- factor_columns[, !(names(factor_columns) %in% correlated_cols)]
 df_for_modeling <- df_for_modeling[, !(names(df_for_modeling) %in% correlated_cols)]
@@ -506,3 +508,4 @@ numeric_cols <- sapply(df_for_modeling, is.numeric)
 factor_cols <- sapply(df_for_modeling, is.factor)
 sum(numeric_cols)
 
+write.csv(data_transformed, file = "data_transformed.csv")
