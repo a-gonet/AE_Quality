@@ -5,7 +5,6 @@ library(dplyr)
 ######################## Exploratory Data Analysis and Transformation ########################
 ##############################################################################################
 
-#data <- read.csv("raw_data/Report_Quality_of_Life.csv")
 
 data2 <- read.csv("AAQoL_original.csv")
 data3 <- rbind(c(1:nrow(data2)),data2)
@@ -395,8 +394,6 @@ df_onehot$US_Live_percent <- df_onehot$US.Residency/df_onehot$Age
 
 save(df_onehot, file = "processed_data/df_onehot.RData")
 
-# badLogit1 <- glm(badQuality~., data=df_onehot, family=binomial(link="logit"))
-# excellentLogit1 <- glm(excellentQuality~., data=df_onehot, family=binomial(link="logit"))
 
 
 
@@ -434,40 +431,63 @@ numeric_columns <- select(df_onehot, where(is.numeric))
 factor_columns <- select(df_onehot, where(is.factor))
 
 # Loop through each numeric column
-# for (col_name in names(numeric_columns)) {
-  
-#   # Histogram plot
-#   hist_plot <- ggplot(df_for_modeling, aes_string(x = col_name)) +
-#     geom_histogram(bins = 30, fill = "skyblue", color = "black") +
-#     labs(title = paste("Histogram of", col_name), x = col_name, y = "Count") +
-#     theme_minimal() +
-#     theme(
-#       panel.background = element_rect(fill = "white"),
-#       plot.background = element_rect(fill = "white"),
-#       panel.grid.major = element_line(color = "grey90"),
-#       panel.grid.minor = element_line(color = "grey95")
-#     )
-#   
-#   # Save histogram
-#   ggsave(filename = paste0("plots/histograms/", col_name, "_histogram.png"),
-#          plot = hist_plot, width = 6, height = 4, dpi = 300)
-#   
-#   # Boxplot
-#   box_plot <- ggplot(df_for_modeling, aes_string(y = col_name)) +
-#     geom_boxplot(fill = "lightgreen") +
-#     labs(title = paste("Boxplot of", col_name), y = col_name) +
-#     theme_minimal() +
-#     theme(
-#       panel.background = element_rect(fill = "white"),
-#       plot.background = element_rect(fill = "white"),
-#       panel.grid.major = element_line(color = "grey90"),
-#       panel.grid.minor = element_line(color = "grey95")
-#     )
-#   
-#   # Save boxplot
-#   ggsave(filename = paste0("plots/boxplots/", col_name, "_boxplot.png"),
-#          plot = box_plot, width = 4, height = 6, dpi = 300)
-# }
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+
+numeric_columns <- df_for_modeling %>% 
+  select(where(is.numeric)) %>% 
+  names()                      # character vector ✔
+
+df_long <- df_for_modeling %>% 
+  pivot_longer(
+    cols      = all_of(numeric_columns),
+    names_to  = "variable",
+    values_to = "value"
+  )
+
+#--- 2. Build one faceted histogram plot -----------------------
+all_hist <- ggplot(df_long, aes(x = value)) +
+  geom_histogram(bins = 30, fill = "skyblue", color = "black") +
+  facet_wrap(~ variable, scales = "free", ncol = 3) +  # adjust ncol to taste
+  labs(title = "Histograms of numeric columns",
+       x = NULL, y = "Count") +
+  theme_minimal() +
+  theme(
+    panel.background  = element_rect(fill = "white"),
+    plot.background   = element_rect(fill = "white"),
+    panel.grid.major  = element_line(color = "grey90"),
+    panel.grid.minor  = element_line(color = "grey95")
+  )
+
+#--- 3. Save the combined figure -------------------------------
+ggsave(filename = "plots/histograms/all_histograms.png",
+       plot     = all_hist,
+       width    = 12,       # wider canvas for many facets
+       height   = 8,
+       dpi      = 300)
+
+# ── 4. Build one faceted box-plot figure ───────────────────────────────
+all_box <- ggplot(df_long, aes(y = value)) +           # y because boxplot is vertical
+  geom_boxplot(fill = "skyblue", colour = "black",     # same palette as before
+               outlier.colour = "red", outlier.alpha = 0.6) +
+  facet_wrap(~ variable, scales = "free", ncol = 3) +  # free y-scales per panel
+  labs(title = "Boxplots of numeric columns",
+       x = NULL, y = "Value") +
+  theme_minimal() +
+  theme(
+    panel.background = element_rect(fill = "white"),
+    plot.background  = element_rect(fill = "white"),
+    panel.grid.major = element_line(colour = "grey90"),
+    panel.grid.minor = element_line(colour = "grey95")
+  )
+
+# ── 5. Save the combined figure ────────────────────────────────────────
+ggsave("plots/boxplots/all_boxplots.png",
+       plot   = all_box,
+       width  = 12,
+       height = 8,
+       dpi    = 300)
 
 library(reshape2)
 
