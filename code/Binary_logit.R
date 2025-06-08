@@ -68,64 +68,68 @@ general_to_specific <- function(base_model, data, type = "logit") {
 }
 
 
-base_logit <- glm(badQuality ~ (Age + Gender + Education.Completed + Household.Size + 
+base_logit <- glm(badQuality ~ (Age + I(Age^2) + Gender + Education.Completed + I(Education.Completed^2) + Household.Size + I(Household.Size^2) +
                                   Friends_LivingWith + Full_Time_Employment_Status + Part_Time_Employment_Status + 
                                   Homemaker_Status + Achieving.Ends.Meet + US_Born_Status + 
-                                  US.Residency + Discrimination + Smoking + Regular.Exercise + 
+                                  US.Residency + I(US.Residency^2) + Discrimination + Smoking + Regular.Exercise + 
                                   Healthy.Diet + Hypertension + Diabetes + Arthritis + Urgentcare + 
                                   Health.Insurance + House_Ownership + Nursing.Home + Smoke.Detector + 
                                   Recycle + Compost + Public.Transportation + Bicycling + Carpooling + 
-                                  Personal.Car + Car.Share + Walking + Home.Phone + Health.Combined.Score + 
-                                  Relatives.Support.Score + Religiousness.Score + `Ethnicity_Asian Indian` + 
+                                  Personal.Car + Car.Share + Walking + Home.Phone + Health.Combined.Score + I(Health.Combined.Score^2) + 
+                                  Relatives.Support.Score + I(Relatives.Support.Score^2) + Religiousness.Score + I(Religiousness.Score^2) + 
+                                  `Ethnicity_Asian Indian` + 
                                   Ethnicity_Chinese + Ethnicity_Filipino + Ethnicity_Korean + 
                                   Ethnicity_Vietnamese + isPartnered + GoodEnglish + EthnicFamiliar + 
                                   DissatisfiedLife + SatisfiedLife + HousingSatisfaction + 
-                                  highIncome + lowIncome + US_Live_percent) ,
+                                  highIncome + lowIncome + US_Live_percent +I(US_Live_percent^2)) ,
                   data = df_onehot, family = binomial(link="logit"))
 
-base_probit <- glm(badQuality ~ (Age + Gender + Education.Completed + Household.Size + 
-                                        Friends_LivingWith + Full_Time_Employment_Status + Part_Time_Employment_Status + 
-                                        Homemaker_Status + Achieving.Ends.Meet + US_Born_Status + 
-                                        US.Residency + Discrimination + Smoking + Regular.Exercise + 
-                                        Healthy.Diet + Hypertension + Diabetes + Arthritis + Urgentcare + 
-                                        Health.Insurance + House_Ownership + Nursing.Home + Smoke.Detector + 
-                                        Recycle + Compost + Public.Transportation + Bicycling + Carpooling + 
-                                        Personal.Car + Car.Share + Walking + Home.Phone + Health.Combined.Score + 
-                                        Relatives.Support.Score + Religiousness.Score + `Ethnicity_Asian Indian` + 
-                                        Ethnicity_Chinese + Ethnicity_Filipino + Ethnicity_Korean + 
-                                        Ethnicity_Vietnamese + isPartnered + GoodEnglish + EthnicFamiliar + 
-                                        DissatisfiedLife + SatisfiedLife + HousingSatisfaction + 
-                                        highIncome + lowIncome + US_Live_percent) ,
+base_probit <- glm(badQuality ~ (Age + I(Age^2) + Gender + Education.Completed + I(Education.Completed^2) + Household.Size + I(Household.Size^2) +
+                                   Friends_LivingWith + Full_Time_Employment_Status + Part_Time_Employment_Status + 
+                                   Homemaker_Status + Achieving.Ends.Meet + US_Born_Status + 
+                                   US.Residency + I(US.Residency^2) + Discrimination + Smoking + Regular.Exercise + 
+                                   Healthy.Diet + Hypertension + Diabetes + Arthritis + Urgentcare + 
+                                   Health.Insurance + House_Ownership + Nursing.Home + Smoke.Detector + 
+                                   Recycle + Compost + Public.Transportation + Bicycling + Carpooling + 
+                                   Personal.Car + Car.Share + Walking + Home.Phone + Health.Combined.Score + I(Health.Combined.Score^2) + 
+                                   Relatives.Support.Score + I(Relatives.Support.Score^2) + Religiousness.Score + I(Religiousness.Score^2) + 
+                                   `Ethnicity_Asian Indian` + 
+                                   Ethnicity_Chinese + Ethnicity_Filipino + Ethnicity_Korean + 
+                                   Ethnicity_Vietnamese + isPartnered + GoodEnglish + EthnicFamiliar + 
+                                   DissatisfiedLife + SatisfiedLife + HousingSatisfaction + 
+                                   highIncome + lowIncome + US_Live_percent +I(US_Live_percent^2)) ,
                   data = df_onehot, family = binomial(link="probit"))
 
-base_logit_exc <- glm(excellentQuality ~ (Age + Gender + Education.Completed + Household.Size + 
-                                        Friends_LivingWith + Full_Time_Employment_Status + Part_Time_Employment_Status + 
-                                        Homemaker_Status + Achieving.Ends.Meet + US_Born_Status + 
-                                        US.Residency + Discrimination + Smoking + Regular.Exercise + 
-                                        Healthy.Diet + Hypertension + Diabetes + Arthritis + Urgentcare + 
-                                        Health.Insurance + House_Ownership + Nursing.Home + Smoke.Detector + 
-                                        Recycle + Compost + Public.Transportation + Bicycling + Carpooling + 
-                                        Personal.Car + Car.Share + Walking + Home.Phone + Health.Combined.Score + 
-                                        Relatives.Support.Score + Religiousness.Score + `Ethnicity_Asian Indian` + 
-                                        Ethnicity_Chinese + Ethnicity_Filipino + Ethnicity_Korean + 
-                                        Ethnicity_Vietnamese + isPartnered + GoodEnglish + EthnicFamiliar + 
-                                        DissatisfiedLife + SatisfiedLife + HousingSatisfaction + 
-                                        highIncome + lowIncome + US_Live_percent) ,
+base_logit_exc <- glm(excellentQuality ~ (Age + I(Age^2) + Gender + Education.Completed + I(Education.Completed^2) + Household.Size + I(Household.Size^2) +
+                                      Friends_LivingWith + Full_Time_Employment_Status + Part_Time_Employment_Status + 
+                                      Homemaker_Status + Achieving.Ends.Meet + US_Born_Status + 
+                                      US.Residency + I(US.Residency^2) + Discrimination + Smoking + Regular.Exercise + 
+                                      Healthy.Diet + Hypertension + Diabetes + Arthritis + Urgentcare + 
+                                      Health.Insurance + House_Ownership + Nursing.Home + Smoke.Detector + 
+                                      Recycle + Compost + Public.Transportation + Bicycling + Carpooling + 
+                                      Personal.Car + Car.Share + Walking + Home.Phone + Health.Combined.Score + I(Health.Combined.Score^2) + 
+                                      Relatives.Support.Score + I(Relatives.Support.Score^2) + Religiousness.Score + I(Religiousness.Score^2) + 
+                                      `Ethnicity_Asian Indian` + 
+                                      Ethnicity_Chinese + Ethnicity_Filipino + Ethnicity_Korean + 
+                                      Ethnicity_Vietnamese + isPartnered + GoodEnglish + EthnicFamiliar + 
+                                      DissatisfiedLife + SatisfiedLife + HousingSatisfaction + 
+                                      highIncome + lowIncome + US_Live_percent +I(US_Live_percent^2)) ,
                   data = df_onehot, family = binomial(link="logit"))
 
-base_probit_exc <- glm(excellentQuality ~ (Age + Gender + Education.Completed + Household.Size + 
-                                        Friends_LivingWith + Full_Time_Employment_Status + Part_Time_Employment_Status + 
-                                        Homemaker_Status + Achieving.Ends.Meet + US_Born_Status + 
-                                        US.Residency + Discrimination + Smoking + Regular.Exercise + 
-                                        Healthy.Diet + Hypertension + Diabetes + Arthritis + Urgentcare + 
-                                        Health.Insurance + House_Ownership + Nursing.Home + Smoke.Detector + 
-                                        Recycle + Compost + Public.Transportation + Bicycling + Carpooling + 
-                                        Personal.Car + Car.Share + Walking + Home.Phone + Health.Combined.Score + 
-                                        Relatives.Support.Score + Religiousness.Score + `Ethnicity_Asian Indian` + 
-                                        Ethnicity_Chinese + Ethnicity_Filipino + Ethnicity_Korean + 
-                                        Ethnicity_Vietnamese + isPartnered + GoodEnglish + EthnicFamiliar + 
-                                        DissatisfiedLife + SatisfiedLife + HousingSatisfaction + 
-                                        highIncome + lowIncome + US_Live_percent) ,
+base_probit_exc <- glm(excellentQuality ~ (Age + I(Age^2) + Gender + Education.Completed + I(Education.Completed^2) + Household.Size + I(Household.Size^2) +
+                                       Friends_LivingWith + Full_Time_Employment_Status + Part_Time_Employment_Status + 
+                                       Homemaker_Status + Achieving.Ends.Meet + US_Born_Status + 
+                                       US.Residency + I(US.Residency^2) + Discrimination + Smoking + Regular.Exercise + 
+                                       Healthy.Diet + Hypertension + Diabetes + Arthritis + Urgentcare + 
+                                       Health.Insurance + House_Ownership + Nursing.Home + Smoke.Detector + 
+                                       Recycle + Compost + Public.Transportation + Bicycling + Carpooling + 
+                                       Personal.Car + Car.Share + Walking + Home.Phone + Health.Combined.Score + I(Health.Combined.Score^2) + 
+                                       Relatives.Support.Score + I(Relatives.Support.Score^2) + Religiousness.Score + I(Religiousness.Score^2) + 
+                                       `Ethnicity_Asian Indian` + 
+                                       Ethnicity_Chinese + Ethnicity_Filipino + Ethnicity_Korean + 
+                                       Ethnicity_Vietnamese + isPartnered + GoodEnglish + EthnicFamiliar + 
+                                       DissatisfiedLife + SatisfiedLife + HousingSatisfaction + 
+                                       highIncome + lowIncome + US_Live_percent +I(US_Live_percent^2)) ,
                   data = df_onehot, family = binomial(link="probit"))
 
 final_model_logit <- general_to_specific(base_logit, df_onehot, "logit")
@@ -161,7 +165,7 @@ lrtest(final_model_logit_exc, final_model_probit_exc)
 
 
 #final summary?
-stargazer(final_model_logit, final_model_logit_exc, type = "text", dep.var.labels.include = FALSE,
+stargazer(final_model_probit, final_model_probit_exc, type = "text", dep.var.labels.include = FALSE,
           column.labels = c("badQuality", "excellentQuality"))
 
 
@@ -177,4 +181,3 @@ print(meff3)
 
 meff4 = probitmfx(formula=final_model_probit_exc$formula, data = df_onehot, atmean=TRUE)
 print(meff4)
-
