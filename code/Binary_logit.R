@@ -1,5 +1,13 @@
 library(stats)
 library(dplyr)
+library(mfx)
+
+# WNE package from Github
+install.packages("devtools")
+library("devtools")
+
+install_github("Rand-0/WNE")
+library(WNE)
 
 load("processed_data/df_onehot.RData")
 
@@ -127,9 +135,18 @@ final_model_logit_exc <- general_to_specific(base_logit_exc, df_onehot, "logit")
 final_model_probit_exc <- general_to_specific(base_probit_exc, df_onehot, "probit")
 
 summary(final_model_logit)
+PseudoR2(final_model_logit, c("McFadden", "McKelveyZavoina"))
+
 summary(final_model_probit)
+PseudoR2(final_model_probit, c("McFadden", "McKelveyZavoina"))
+
 summary(final_model_logit_exc)
+PseudoR2(final_model_logit_exc, c("McFadden", "McKelveyZavoina"))
+
 summary(final_model_probit_exc)
+PseudoR2(final_model_probit_exc, c("McFadden", "McKelveyZavoina"))
+
+
 
 library(stargazer)
 stargazer(final_model_logit, final_model_probit, type = "text", dep.var.labels.include = FALSE,
@@ -141,4 +158,23 @@ stargazer(final_model_logit_exc, final_model_probit_exc, type = "text", dep.var.
           column.labels = c("excellentQuality", "excellentQuality"))
 
 lrtest(final_model_logit_exc, final_model_probit_exc)
+
+
+#final summary?
+stargazer(final_model_logit, final_model_logit_exc, type = "text", dep.var.labels.include = FALSE,
+          column.labels = c("badQuality", "excellentQuality"))
+
+
+
+meff1 = logitmfx(formula=final_model_logit$formula, data = df_onehot, atmean=TRUE)
+print(meff1)
+
+meff2 = probitmfx(formula=final_model_probit$formula, data = df_onehot, atmean=TRUE)
+print(meff2)
+
+meff3 = logitmfx(formula=final_model_logit_exc$formula, data = df_onehot, atmean=TRUE)
+print(meff3)
+
+meff4 = probitmfx(formula=final_model_probit_exc$formula, data = df_onehot, atmean=TRUE)
+print(meff4)
 
