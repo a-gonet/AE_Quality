@@ -10,17 +10,9 @@ library("devtools")
 install_github("Rand-0/WNE")
 library(WNE)
 
-#setwd("C:\\Users\\Adam\\Documents\\AE_Quality")
 
 load("processed_data/df_onehot.RData")
 
-# df_onehot[] <- lapply(df_onehot, function(x) {
-#   if (is.factor(x) || is.character(x)) {
-#     as.numeric(as.character(x))
-#   } else {
-#     x
-#   }
-# })
 
 df_onehot$Ethnicity_Asian_Indian <- df_onehot$`Ethnicity_Asian Indian`
 df_onehot$`Ethnicity_Asian Indian` <- NULL
@@ -286,12 +278,10 @@ library(stargazer)
 stargazer(final_model_logit, final_model_probit, type = "text", dep.var.labels.include = FALSE,
           column.labels = c("badQuality", "badQuality"))
 
-#lrtest(final_model_logit, final_model_probit)
 
 stargazer(final_model_logit_exc, final_model_probit_exc, type = "text", dep.var.labels.include = FALSE,
           column.labels = c("excellentQuality", "excellentQuality"))
 
-#lrtest(final_model_logit_exc, final_model_probit_exc)
 
 
 #final summary?
