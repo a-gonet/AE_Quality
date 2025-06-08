@@ -1,6 +1,7 @@
 library(stats)
 library(dplyr)
 library(mfx)
+library(BaylorEdPsych)
 
 # WNE package from Github
 install.packages("devtools")
@@ -177,6 +178,7 @@ summary(base_logit_lin)
 # Linktest
 # source("linktest.R")
 linktest_result = WNE::linktest(base_logit_lin)
+print(linktest_result)
 # square interactions needed
 
 final_logit_linear <- general_to_specific(base_logit_lin, df_onehot, "logit")
@@ -250,6 +252,13 @@ base_probit_exc <- glm(excellentQuality ~ (Age + I(Age^2) + Gender + Education.C
                                        highIncome + lowIncome + US_Live_percent +I(US_Live_percent^2)) ,
                   data = df_onehot, family = binomial(link="probit"))
 
+null_probit <- glm(badQuality ~ 1, data = df_onehot, family = binomial(link="probit"))
+null_probit_exc <- glm(excellentQuality ~ 1, data = df_onehot, family = binomial(link="probit"))
+
+lrtest(null_probit, base_probit)
+
+summary(base_probit)
+
 
 final_model_logit <- general_to_specific(base_logit, df_onehot, "logit")
 final_model_probit <- general_to_specific(base_probit, df_onehot, "probit")
@@ -258,29 +267,31 @@ final_model_logit_exc <- general_to_specific(base_logit_exc, df_onehot, "logit")
 final_model_probit_exc <- general_to_specific(base_probit_exc, df_onehot, "probit")
 
 summary(final_model_logit)
-PseudoR2(final_model_logit, c("McFadden", "McKelveyZavoina"))
+PseudoR2(final_model_logit)
 
 summary(final_model_probit)
-PseudoR2(final_model_probit, c("McFadden", "McKelveyZavoina"))
+PseudoR2(final_model_probit)
 
 summary(final_model_logit_exc)
-PseudoR2(final_model_logit_exc, c("McFadden", "McKelveyZavoina"))
+PseudoR2(final_model_logit_exc)
 
 summary(final_model_probit_exc)
-PseudoR2(final_model_probit_exc, c("McFadden", "McKelveyZavoina"))
+PseudoR2(final_model_probit_exc)
 
+AIC(null_probit, base_probit, final_model_logit, final_model_probit)
+AIC(null_probit_exc, base_probit_exc, final_model_logit_exc, final_model_probit_exc)
 
 
 library(stargazer)
 stargazer(final_model_logit, final_model_probit, type = "text", dep.var.labels.include = FALSE,
           column.labels = c("badQuality", "badQuality"))
 
-lrtest(final_model_logit, final_model_probit)
+#lrtest(final_model_logit, final_model_probit)
 
 stargazer(final_model_logit_exc, final_model_probit_exc, type = "text", dep.var.labels.include = FALSE,
           column.labels = c("excellentQuality", "excellentQuality"))
 
-lrtest(final_model_logit_exc, final_model_probit_exc)
+#lrtest(final_model_logit_exc, final_model_probit_exc)
 
 
 #final summary?
@@ -297,11 +308,15 @@ print(linktest_result2)
 # no more other square interactions needed
 
 library(ResourceSelection)
-hoslem.test(df_onehot$badQuality, fitted(final_model_probit)) #H0 -> appropriate model
-o.r.test(final_model_probit)#H0 -> appropriate model
+hoslem.test(df_onehot$badQuality, fitted(final_model_probit)) 
+#H0 -> appropriate model
+o.r.test(final_model_probit)
+#H0 -> appropriate model
 
-hoslem.test(df_onehot$badQuality, fitted(final_model_probit_exc)) #H0 -> appropriate model
-o.r.test(final_model_probit_exc)#H0 -> appropriate model
+hoslem.test(df_onehot$excellentQuality, fitted(final_model_probit_exc)) 
+#H0 -> appropriate model
+o.r.test(final_model_probit_exc)
+#H0 -> appropriate model
 
 meff1 = logitmfx(formula=final_model_logit$formula, data = df_onehot, atmean=TRUE)
 print(meff1)
