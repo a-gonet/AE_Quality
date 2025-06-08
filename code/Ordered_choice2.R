@@ -3,7 +3,7 @@ library(MASS)
 library(lmtest)
 library(mlogit)
 
-load("processed_data/df_for_modeling.RData")
+load("~/processed_data/df_for_modeling.RData")
 
 summary(df_for_modeling)
 dim(df_for_modeling)
@@ -31,6 +31,7 @@ df_for_modeling <- df_for_modeling %>% select(-ID)
 ordered_logit_model <- ologit.reg(Quality.of.Life ~ . , data = df_for_modeling)
 summary(ordered_logit_model)
 coeftest(ordered_logit_model)
+brant(ordered_logit_model)
 
 
 ordered_logit_model_update2
@@ -81,8 +82,7 @@ df_for_modeling$highQualityCity[df_for_modeling$Quality_of_city_life %in% c("3",
 
 
 ordered_logit_model_bad <- ologit.reg(Quality.of.Life ~ Age+ Marital.Status + Language + Education.Completed +
-                                        Alone + Spouse_Living + Children_Living + Parent_Living + Sibling_Living +
-                                        
+                                        Alone 
                                         , data = df_for_modeling)
 
 summary(ordered_logit_model_bad)
@@ -214,6 +214,27 @@ lpm_model <- lm(Quality.of.Life ~ Age + Gender + Income + Achieving.Ends.Meet + 
                   + Satisfaction.With.Housing + Health.Combined.Score + Life.Satisfaction.Combined.Score, data = df_for_lpm)
 summary(lpm_model)
 
+lpm_model <- lm(Quality.of.Life ~ . - Smoke.Detector - Traffic - Aware.of.AARC - Knowledge
+                                        - Weakness - Email - Mobile.Apps - Preferance - Primary.Care - Familiarity.with.Ethnic.Origin
+                                        - Student - Sibling_LivingWith - Religious.Importance - Marital.Status - Alone
+                                        - Spouse_LivingWith - Retired - English.Difficulties - Physical.Check.up
+                                        - Dental.Insurance - Informed - Housing - Focus.Group - City.Election - Contact.City.Official
+                                        - Recycle - Satisfaction.With.Housing - APD.Languages - Library.Internet.Acess
+                                        - X9.1.1 - Disclosure - Antidepressants - Danger - Social.Networks - Health.Website - Family
+                                        - Urgentcare - Public.Transportation - EMS.Classes - Familiarity.with.America
+                                        - Language - Home.Phone - District - Citizenship.Class - Religious.Attendance
+                                        - Fire.Alarm - Public.Computer - Car.Share - Religion - Hypertension - Transportation..Medical.
+                                        - Online.Communities - Preference - City.Residency - City.Effort.Satisfaction
+                                        - Parent_LivingWith - Full_Time_Employment_Status - Identify.Ethnically - Unmet.Health.Need
+                                        - Unmet.Dental.Needs - Comunication.Problem - users - Acquaintances - Recovery - Treatment
+                                        - Counseling - Diagnosed - Have.an.Advanced.Directive - Small.Businesses
+                                        - Homemaker_Status - Children_LivingWith - Belonging - Smoking - Dentist.Check.up - X3.1.1
+                                        - Ethnicity - Income - Close.Friend - Superstition - English.Speaking - Place.to.Live.Combined.Score
+                                        - Walking - Compost - Bicycling - Carpooling - Personal.Car - Disappointment
+                                        - Education.Completed - Diabetes - Activities - English.Classes - Small.Business
+                                        - Public.Meeting - House_Ownership - Shame - Household.Size - Healthy.Diet - Quality_of_city_life
+                                        - Age - Literature - Folkmedicine
+                                        , data = df_for_lpm)
 
 
 # TESTS
@@ -255,3 +276,6 @@ model_ologit <- vglm(Quality.of.Life ~ Age + Gender + Income + Achieving.Ends.Me
 lipsitz.test(model_ologit)
 
 pulkrob.test(model_ologit)
+
+
+
