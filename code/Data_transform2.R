@@ -166,7 +166,9 @@ ordered_levels <- list(
   Helpful.Family = c("0", "1", "2", "3", "4", "5"),
   See.Friends = c("0", "1", "2", "3", "4", "5"),
   Close.Friends = c("0", "1", "2", "3", "4", "5"),
-  Helpful.Friends = c("0", "1", "2", "3", "4", "5")
+  Helpful.Friends = c("0", "1", "2", "3", "4", "5"),
+  House_Ownership = c("Rent", "Own"),
+  Gender = c("Female", "Male")
   
 )
 
