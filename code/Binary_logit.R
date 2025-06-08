@@ -13,16 +13,19 @@ library(WNE)
 
 load("processed_data/df_onehot.RData")
 
-df_onehot[] <- lapply(df_onehot, function(x) {
-  if (is.factor(x) || is.character(x)) {
-    as.numeric(as.character(x))
-  } else {
-    x
-  }
-})
+# df_onehot[] <- lapply(df_onehot, function(x) {
+#   if (is.factor(x) || is.character(x)) {
+#     as.numeric(as.character(x))
+#   } else {
+#     x
+#   }
+# })
 
 df_onehot$Ethnicity_Asian_Indian <- df_onehot$`Ethnicity_Asian Indian`
 df_onehot$`Ethnicity_Asian Indian` <- NULL
+
+df_onehot$badQuality <- as.numeric(df_onehot$badQuality) -1
+df_onehot$excellentQuality <- as.numeric(df_onehot$excellentQuality) -1
 
 general_to_specific <- function(base_model, data, type = "logit") {
   current_model <- base_model
@@ -296,6 +299,9 @@ print(linktest_result2)
 library(ResourceSelection)
 hoslem.test(df_onehot$badQuality, fitted(final_model_probit)) #H0 -> appropriate model
 o.r.test(final_model_probit)#H0 -> appropriate model
+
+hoslem.test(df_onehot$badQuality, fitted(final_model_probit_exc)) #H0 -> appropriate model
+o.r.test(final_model_probit_exc)#H0 -> appropriate model
 
 meff1 = logitmfx(formula=final_model_logit$formula, data = df_onehot, atmean=TRUE)
 print(meff1)
